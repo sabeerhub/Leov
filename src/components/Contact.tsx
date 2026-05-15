@@ -12,6 +12,37 @@ const fadeInUp = {
 };
 
 export const Contact = () => {
+  const [status, setStatus] = React.useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStatus('loading');
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const response = await fetch('https://formsubmit.co/ajax/mustaphaabdulsalam1666@gmail.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        setStatus('success');
+        (e.target as HTMLFormElement).reset();
+      } else {
+        setStatus('error');
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      setStatus('error');
+    }
+  };
+
   return (
     <section id="contact" className="section-padding bg-white dark:bg-[#05070A]">
       <div className="container mx-auto px-6 lg:px-12">
@@ -49,13 +80,15 @@ export const Contact = () => {
             transition={{ ...fadeInUp.transition, delay: 0.2 } as Transition}
             className="rounded-[40px] bg-[#F8F9FA] p-10 dark:bg-white/5 shadow-2xl"
           >
-            <form className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-2">
                   <label htmlFor="name" className="text-sm font-bold uppercase tracking-widest text-gray-500">Full Name</label>
                   <input
                     type="text"
                     id="name"
+                    name="name"
+                    required
                     className="w-full rounded-2xl border-none bg-white px-6 py-4 text-primary shadow-sm ring-1 ring-gray-200 focus:ring-2 focus:ring-accent dark:bg-white/5 dark:text-white dark:ring-white/10"
                     placeholder="John Doe"
                   />
@@ -65,6 +98,8 @@ export const Contact = () => {
                   <input
                     type="email"
                     id="email"
+                    name="email"
+                    required
                     className="w-full rounded-2xl border-none bg-white px-6 py-4 text-primary shadow-sm ring-1 ring-gray-200 focus:ring-2 focus:ring-accent dark:bg-white/5 dark:text-white dark:ring-white/10"
                     placeholder="john@company.com"
                   />
@@ -75,6 +110,7 @@ export const Contact = () => {
                 <label htmlFor="subject" className="text-sm font-bold uppercase tracking-widest text-gray-500">Subject</label>
                 <select
                   id="subject"
+                  name="subject"
                   className="w-full rounded-2xl border-none bg-white px-6 py-4 text-primary shadow-sm ring-1 ring-gray-200 focus:ring-2 focus:ring-accent dark:bg-white/5 dark:text-white dark:ring-white/10 appearance-none"
                 >
                   <option>Strategic Consulting</option>
@@ -88,15 +124,29 @@ export const Contact = () => {
                 <label htmlFor="message" className="text-sm font-bold uppercase tracking-widest text-gray-500">Message</label>
                 <textarea
                   id="message"
+                  name="message"
+                  required
                   rows={4}
                   className="w-full rounded-2xl border-none bg-white px-6 py-4 text-primary shadow-sm ring-1 ring-gray-200 focus:ring-2 focus:ring-accent dark:bg-white/5 dark:text-white dark:ring-white/10"
                   placeholder="How can we help you?"
                 ></textarea>
               </div>
 
-              <Button size="lg" className="w-full h-16 rounded-2xl text-lg font-bold tracking-widest uppercase">
-                Send Inquiry
+              <Button
+                size="lg"
+                type="submit"
+                disabled={status === 'loading'}
+                className="w-full h-16 rounded-2xl text-lg font-bold tracking-widest uppercase disabled:opacity-70"
+              >
+                {status === 'loading' ? 'Sending...' : 'Send Inquiry'}
               </Button>
+
+              {status === 'success' && (
+                <p className="text-center text-green-500 font-bold">Thank you! Your message has been sent.</p>
+              )}
+              {status === 'error' && (
+                <p className="text-center text-red-500 font-bold">Something went wrong. Please try again.</p>
+              )}
             </form>
           </motion.div>
         </div>

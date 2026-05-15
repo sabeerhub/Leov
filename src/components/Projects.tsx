@@ -59,6 +59,28 @@ const fadeInUp = {
   transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } as Transition
 };
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: [0.16, 1, 0.3, 1]
+    } as Transition
+  },
+};
+
 export const Projects = () => {
   const [activeCategory, setActiveCategory] = useState('All');
 
@@ -70,10 +92,13 @@ export const Projects = () => {
     <section id="projects" className="section-padding bg-white">
       <div className="container mx-auto">
         <motion.div
-          initial={fadeInUp.initial}
-          whileInView={fadeInUp.whileInView}
-          viewport={fadeInUp.viewport}
-          transition={fadeInUp.transition}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={{
+            initial: { opacity: 0, y: 40 },
+            whileInView: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+          }}
           className="mb-20 flex flex-col items-center justify-between gap-10 md:flex-row md:items-end"
         >
           <div className="max-w-2xl">
@@ -102,17 +127,19 @@ export const Projects = () => {
 
         <motion.div
           layout
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
           className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3"
         >
           <AnimatePresence mode='popLayout'>
-            {filteredProjects.map((project, index) => (
+            {filteredProjects.map((project) => (
               <motion.div
                 key={project.id}
                 layout
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
+                variants={cardVariants}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                transition={{ duration: 0.6, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] } as Transition}
                 className="group relative overflow-hidden rounded-[40px] bg-slate-50 aspect-[4/5] shadow-sm hover:shadow-2xl transition-all duration-700"
               >
                 <div className="absolute inset-0 transition-transform duration-1000 group-hover:scale-110">
