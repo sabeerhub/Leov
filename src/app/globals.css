@@ -1,9 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #05070A;
+  --color-primary: #0F172A;
   --color-accent: #0070F3;
-  --color-soft-white: #FAFAFA;
+  --color-accent-dark: #0056b3;
+  --color-soft-white: #FFFFFF;
+  --color-bg-light: #F8FAFC;
 }
 
 @layer base {
@@ -13,7 +15,7 @@
   }
 
   body {
-    @apply bg-soft-white text-primary dark:bg-[#05070A] dark:text-white;
+    @apply bg-soft-white text-primary;
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
@@ -32,7 +34,11 @@
 
 @layer components {
   .glass {
-    @apply bg-white/70 backdrop-blur-2xl border border-white/20 dark:bg-black/40 dark:border-white/10;
+    @apply bg-white/80 backdrop-blur-2xl border border-slate-200;
+  }
+
+  .glass-dark {
+     @apply bg-slate-900/80 backdrop-blur-2xl border border-slate-700;
   }
 
   .section-padding {
@@ -40,7 +46,7 @@
   }
 
   .shadow-premium {
-    box-shadow: 0 0 50px -12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -52,10 +58,10 @@
   }
 }
 
-/* Kinetic Grid Background for Dark Mode */
-.dark .kinetic-grid {
-  background-size: 50px 50px;
+/* Kinetic Grid Background for Light Mode */
+.kinetic-grid {
+  background-size: 60px 60px;
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    linear-gradient(to right, rgba(0, 112, 243, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 112, 243, 0.03) 1px, transparent 1px);
 }

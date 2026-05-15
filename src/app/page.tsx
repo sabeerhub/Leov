@@ -9,7 +9,7 @@ import { Contact } from '@/components/Contact';
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen dark kinetic-grid">
+    <main className="relative min-h-screen kinetic-grid">
       <Navbar />
       <Hero />
       <LogoWall />
