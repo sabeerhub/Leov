@@ -70,20 +70,11 @@ const containerVariants = {
 };
 
 const cardVariants = {
-  hidden: {
-    opacity: 0,
-    x: 100,
-    filter: 'blur(10px)'
-  },
+  hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
-    x: 0,
-    filter: 'blur(0px)',
+    y: 0,
     transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 20,
-      mass: 1,
       duration: 0.8,
       ease: [0.16, 1, 0.3, 1]
     } as Transition
@@ -139,7 +130,7 @@ export const Projects = () => {
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: false, margin: "-100px" }}
+          viewport={{ once: true, margin: "-100px" }}
           className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3"
         >
           <AnimatePresence mode='popLayout'>
