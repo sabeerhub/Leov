@@ -1,22 +1,31 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
-import { motion, useMotionValue, useSpring, useTransform, MotionValue, AnimatePresence } from 'framer-motion';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { motion, useMotionValue, useSpring, useTransform, MotionValue, AnimatePresence, useAnimationFrame } from 'framer-motion';
 import { Button } from './ui/Button';
 import Image from 'next/image';
 import { Shield, Globe, Zap, BarChart3, Database, TrendingUp } from 'lucide-react';
 
-const CARDS = [
-  { id: 1, image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop', label: 'Infrastructure', icon: Database, initialX: 10, initialY: 10, depth: 1 },
-  { id: 2, image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop', label: 'Innovation', icon: Zap, initialX: 55, initialY: 5, depth: 2 },
-  { id: 3, image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=800&auto=format&fit=crop', label: 'Corporate', icon: Shield, initialX: 25, initialY: 45, depth: 1.5 },
-  { id: 4, image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop', label: 'Strategy', icon: BarChart3, initialX: 65, initialY: 40, depth: 2.5 },
-  { id: 5, image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop', label: 'Fintech', icon: Globe, initialX: 15, initialY: 75, depth: 1.2 },
-  { id: 6, image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=800&auto=format&fit=crop', label: 'Growth', icon: TrendingUp, initialX: 60, initialY: 75, depth: 2 },
+const CARDS_DATA = [
+  { id: 1, image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop', label: 'Infrastructure', icon: Database, depth: 1 },
+  { id: 2, image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop', label: 'Innovation', icon: Zap, depth: 2 },
+  { id: 3, image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=800&auto=format&fit=crop', label: 'Corporate', icon: Shield, depth: 1.5 },
+  { id: 4, image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop', label: 'Strategy', icon: BarChart3, depth: 2.5 },
+  { id: 5, image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop', label: 'Fintech', icon: Globe, depth: 1.2 },
+  { id: 6, image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=800&auto=format&fit=crop', label: 'Growth', icon: TrendingUp, depth: 2 },
+];
+
+const POSITIONS = [
+  { x: 10, y: 10 },
+  { x: 55, y: 5 },
+  { x: 25, y: 45 },
+  { x: 65, y: 40 },
+  { x: 15, y: 75 },
+  { x: 60, y: 75 },
 ];
 
 interface CardProps {
-  card: typeof CARDS[0];
+  card: typeof CARDS_DATA[0];
   mouseX: MotionValue<number>;
   mouseY: MotionValue<number>;
   hoveredId: number | null;
@@ -29,41 +38,63 @@ const FloatingCard = ({ card, mouseX, mouseY, hoveredId, setHoveredId, index, ro
   const isHovered = hoveredId === card.id;
   const isAnyHovered = hoveredId !== null;
 
-  const factor = card.depth * 30;
-  const tx = useTransform(mouseX, [0, 1200], [factor, -factor]);
-  const ty = useTransform(mouseY, [0, 800], [factor, -factor]);
+  // Calculate slot index based on rotation
+  const slotIndex = (index + rotationOffset) % POSITIONS.length;
+  const slot = POSITIONS[slotIndex];
+
+  // Continuous floating animation
+  const time = useMotionValue(0);
+  useAnimationFrame((t) => time.set(t / 1000));
+
+  const floatY = useTransform(time, (t) => Math.sin(t + index) * 10);
+  const floatX = useTransform(time, (t) => Math.cos(t * 0.8 + index) * 5);
+
+  // Parallax based on mouse
+  const parallaxFactor = card.depth * 25;
+  const parallaxX = useTransform(mouseX, [0, 1200], [parallaxFactor, -parallaxFactor]);
+  const parallaxY = useTransform(mouseY, [0, 800], [parallaxFactor, -parallaxFactor]);
+
+  // Repulsion effect
+  const repulsionX = isAnyHovered && !isHovered ? (slot.x < 50 ? -20 : 20) : 0;
+  const repulsionY = isAnyHovered && !isHovered ? (slot.y < 50 ? -20 : 20) : 0;
+
+  // Combine all motions
+  const combinedX = useMotionValue(0);
+  const combinedY = useMotionValue(0);
+
+  useEffect(() => {
+    const unsubscribeX = parallaxX.on("change", (v) => combinedX.set(v + floatX.get() + repulsionX));
+    const unsubscribeY = parallaxY.on("change", (v) => combinedY.set(v + floatY.get() + repulsionY));
+    return () => {
+      unsubscribeX();
+      unsubscribeY();
+    };
+  }, [parallaxX, parallaxY, floatX, floatY, repulsionX, repulsionY, combinedX, combinedY]);
 
   const springConfig = { damping: 30, stiffness: 100 };
-  const x = useSpring(tx, springConfig);
-  const y = useSpring(ty, springConfig);
+  const x = useSpring(combinedX, springConfig);
+  const y = useSpring(combinedY, springConfig);
 
-  const repulsionX = isAnyHovered && !isHovered ? (index % 2 === 0 ? -15 : 15) : 0;
-  const repulsionY = isAnyHovered && !isHovered ? (index < 3 ? -15 : 15) : 0;
-
-  const cycleIndex = (index + rotationOffset) % CARDS.length;
-  const zIndex = Math.floor(cycleIndex * 10);
-  const opacity = 0.6 + (cycleIndex / CARDS.length) * 0.4;
+  const zIndex = 10 + slotIndex;
+  const opacity = 0.7 + (slotIndex / POSITIONS.length) * 0.3;
 
   return (
     <motion.div
+      layout
       style={{
         x, y,
-        left: `${card.initialX}%`,
-        top: `${card.initialY}%`,
+        left: `${slot.x}%`,
+        top: `${slot.y}%`,
         zIndex
       }}
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{
-        opacity,
-        scale: isHovered ? 1.08 : 1,
-        x: x.get() + repulsionX,
-        y: y.get() + repulsionY,
+        opacity: isHovered ? 1 : opacity,
+        scale: isHovered ? 1.05 : 1,
       }}
       transition={{
-        opacity: { duration: 0.8 },
+        layout: { duration: 1.5, ease: [0.16, 1, 0.3, 1] },
         scale: { type: "spring", stiffness: 400, damping: 25 },
-        x: { type: "spring", stiffness: 100, damping: 30 },
-        y: { type: "spring", stiffness: 100, damping: 30 }
       }}
       onHoverStart={() => setHoveredId(card.id)}
       onHoverEnd={() => setHoveredId(null)}
@@ -87,33 +118,22 @@ const FloatingCard = ({ card, mouseX, mouseY, hoveredId, setHoveredId, index, ro
         </div>
       </div>
 
-      <motion.div
-        className="absolute inset-0 border border-white/20 rounded-[24px]"
-        animate={{
-          y: [0, -10, 0],
-          x: [0, 5, 0]
-        }}
-        transition={{
-          duration: 6 + card.id,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
+      <div className="absolute inset-0 border border-white/20 rounded-[24px]" />
     </motion.div>
   );
 };
 
 export const Hero = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
+  const mouseX = useMotionValue(600);
+  const mouseY = useMotionValue(400);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [rotationOffset, setRotationOffset] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setRotationOffset((prev) => (prev + 1) % CARDS.length);
-    }, 8000);
+      setRotationOffset((prev) => (prev + 1) % CARDS_DATA.length);
+    }, 7000);
     return () => clearInterval(interval);
   }, []);
 
@@ -163,7 +183,7 @@ export const Hero = () => {
           </p>
 
           <div className="flex flex-wrap gap-6">
-            <Button size="lg" className="h-16 px-12 text-[13px] font-black tracking-widest uppercase rounded-full bg-primary hover:bg-slate-800 shadow-2xl">
+            <Button size="lg" className="h-16 px-12 text-[13px] font-black tracking-widest uppercase rounded-full bg-primary hover:bg-accent-dark shadow-2xl">
               Get Started
             </Button>
             <Button variant="secondary" size="lg" className="h-16 px-12 text-[13px] font-black tracking-widest uppercase rounded-full border-slate-200 text-primary hover:bg-slate-50 transition-all">
@@ -173,25 +193,23 @@ export const Hero = () => {
         </motion.div>
 
         <div className="relative hidden h-[650px] lg:block">
-          <AnimatePresence>
-            {CARDS.map((card, index) => (
-              <FloatingCard
-                key={card.id}
-                card={card}
-                mouseX={mouseX}
-                mouseY={mouseY}
-                hoveredId={hoveredId}
-                setHoveredId={setHoveredId}
-                index={index}
-                rotationOffset={rotationOffset}
-              />
-            ))}
-          </AnimatePresence>
+          {CARDS_DATA.map((card, index) => (
+            <FloatingCard
+              key={card.id}
+              card={card}
+              mouseX={mouseX}
+              mouseY={mouseY}
+              hoveredId={hoveredId}
+              setHoveredId={setHoveredId}
+              index={index}
+              rotationOffset={rotationOffset}
+            />
+          ))}
         </div>
 
         {/* Mobile View */}
         <div className="relative flex w-full gap-4 overflow-x-auto pb-12 lg:hidden no-scrollbar snap-x">
-          {CARDS.map((card) => (
+          {CARDS_DATA.map((card) => (
             <motion.div
               key={card.id}
               className="relative aspect-[4/3] w-80 flex-shrink-0 snap-center overflow-hidden rounded-[32px] shadow-2xl border border-slate-100"
