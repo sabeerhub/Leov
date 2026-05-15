@@ -4,17 +4,19 @@ import { LogoWall } from '@/components/LogoWall';
 import { About } from '@/components/About';
 import { Services } from '@/components/Services';
 import { Projects } from '@/components/Projects';
+import { Testimonials } from '@/components/Testimonials';
 import { Contact } from '@/components/Contact';
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen">
+    <main className="relative min-h-screen dark kinetic-grid">
       <Navbar />
       <Hero />
       <LogoWall />
       <About />
       <Services />
       <Projects />
+      <Testimonials />
       <Contact />
 
       <footer className="bg-primary py-12 text-center text-white dark:bg-black">

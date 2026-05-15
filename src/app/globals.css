@@ -1,55 +1,61 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #0A0E1A;
-  --color-accent: #3B82F6;
-  --color-accent-dark: #2563EB;
-  --color-soft-white: #F8FAFC;
-
-  --font-sans: "Inter", "Satoshi", "SF Pro Display", system-ui, sans-serif;
-
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
-
-  --shadow-premium: 0 10px 30px -10px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
-  --shadow-premium-hover: 0 20px 40px -15px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --color-primary: #05070A;
+  --color-accent: #0070F3;
+  --color-soft-white: #FAFAFA;
 }
 
 @layer base {
-  :root {
-    --background: #F8FAFC;
-    --foreground: #0A0E1A;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --background: #05070A;
-      --foreground: #F8FAFC;
-    }
+  html {
+    scroll-behavior: smooth;
+    cursor: default;
   }
 
   body {
-    background: var(--background);
-    color: var(--foreground);
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    @apply bg-soft-white text-primary dark:bg-[#05070A] dark:text-white;
+    font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* Custom scrollbar for premium feel */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-accent/20 rounded-full hover:bg-accent/40 transition-colors;
   }
 }
 
-@layer utilities {
+@layer components {
   .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/20;
-  }
-
-  .dark .glass {
-    @apply bg-black/50 backdrop-blur-md border border-white/10;
-  }
-
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-linear-to-r from-primary via-accent to-accent-dark;
+    @apply bg-white/70 backdrop-blur-2xl border border-white/20 dark:bg-black/40 dark:border-white/10;
   }
 
   .section-padding {
-    @apply py-20 px-6 md:px-12 lg:px-24;
+    @apply py-24 md:py-40;
   }
+
+  .shadow-premium {
+    box-shadow: 0 0 50px -12px rgba(0, 0, 0, 0.1);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Kinetic Grid Background for Dark Mode */
+.dark .kinetic-grid {
+  background-size: 50px 50px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
 }

@@ -30,22 +30,22 @@ const FloatingCard = ({ card, mouseX, mouseY, hoveredId, setHoveredId, index, ro
   const isAnyHovered = hoveredId !== null;
 
   // Parallax depth
-  const factor = card.depth * 25;
-  const tx = useTransform(mouseX, [0, 1000], [factor, -factor]);
-  const ty = useTransform(mouseY, [0, 1000], [factor, -factor]);
+  const factor = card.depth * 35;
+  const tx = useTransform(mouseX, [0, 1200], [factor, -factor]);
+  const ty = useTransform(mouseY, [0, 800], [factor, -factor]);
 
-  const springConfig = { damping: 25, stiffness: 120 };
+  const springConfig = { damping: 30, stiffness: 100 };
   const x = useSpring(tx, springConfig);
   const y = useSpring(ty, springConfig);
 
   // Repulsion effect
-  const repulsionX = isAnyHovered && !isHovered ? (index % 2 === 0 ? -15 : 15) : 0;
-  const repulsionY = isAnyHovered && !isHovered ? (index < 3 ? -15 : 15) : 0;
+  const repulsionX = isAnyHovered && !isHovered ? (index % 2 === 0 ? -20 : 20) : 0;
+  const repulsionY = isAnyHovered && !isHovered ? (index < 3 ? -20 : 20) : 0;
 
   // Rotation cycle position
   const cycleIndex = (index + rotationOffset) % CARDS.length;
   const zIndex = Math.floor(cycleIndex * 10);
-  const opacity = 0.5 + (cycleIndex / CARDS.length) * 0.5;
+  const opacity = 0.4 + (cycleIndex / CARDS.length) * 0.6;
 
   return (
     <motion.div
@@ -63,38 +63,45 @@ const FloatingCard = ({ card, mouseX, mouseY, hoveredId, setHoveredId, index, ro
         y: y.get() + repulsionY,
       }}
       transition={{
-        opacity: { duration: 0.5 },
-        scale: { type: "spring", stiffness: 300, damping: 20 },
+        opacity: { duration: 0.8 },
+        scale: { type: "spring", stiffness: 400, damping: 25 },
+        x: { type: "spring", stiffness: 100, damping: 30 },
+        y: { type: "spring", stiffness: 100, damping: 30 }
       }}
       onHoverStart={() => setHoveredId(card.id)}
       onHoverEnd={() => setHoveredId(null)}
-      className="absolute h-40 w-56 rounded-2xl overflow-hidden shadow-2xl glass cursor-pointer"
+      className="absolute h-44 w-60 rounded-[24px] overflow-hidden shadow-2xl glass cursor-pointer group"
     >
       <Image
         src={card.image}
         alt={card.label}
         fill
-        className="object-cover transition-transform duration-700 group-hover:scale-110"
+        className="object-cover transition-transform duration-1000 group-hover:scale-110"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="rounded-lg bg-accent/20 p-1.5 backdrop-blur-md">
-            <card.icon className="h-4 w-4 text-white" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent transition-opacity duration-500 group-hover:opacity-80" />
+
+      {/* Lighting highlight */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+
+      <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="rounded-xl bg-accent/30 p-2 backdrop-blur-xl border border-white/20">
+            <card.icon className="h-5 w-5 text-white" />
           </div>
-          <span className="text-sm font-bold text-white tracking-wide uppercase">{card.label}</span>
+          <span className="text-sm font-black text-white tracking-[0.1em] uppercase">{card.label}</span>
         </div>
       </div>
 
-      {/* Continuous float animation via internal div to not mess with parallax */}
+      {/* Continuous physics-like drift */}
       <motion.div
-        className="absolute inset-0 border border-white/20 rounded-2xl"
+        className="absolute inset-0 border border-white/10 rounded-[24px]"
         animate={{
-          y: [0, -8, 0],
-          x: [0, 4, 0]
+          y: [0, -12, 0],
+          x: [0, 6, 0],
+          rotate: [0, 1, 0]
         }}
         transition={{
-          duration: 5 + card.id,
+          duration: 6 + card.id,
           repeat: Infinity,
           ease: "easeInOut"
         }}
@@ -113,7 +120,7 @@ export const Hero = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setRotationOffset((prev) => (prev + 1) % CARDS.length);
-    }, 5000);
+    }, 7000);
     return () => clearInterval(interval);
   }, []);
 
@@ -128,30 +135,46 @@ export const Hero = () => {
     <section
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      className="relative flex min-h-screen items-center overflow-hidden bg-[#FAFAFA] pt-24 dark:bg-[#05070A]"
+      className="relative flex min-h-screen items-center overflow-hidden bg-[#05070A] pt-24"
     >
-      <div className="container mx-auto grid grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2 lg:px-12">
+      {/* Cinematic Background Layer */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-[-10%] left-[-10%] h-[40%] w-[40%] rounded-full bg-accent/10 blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] h-[50%] w-[50%] rounded-full bg-blue-600/10 blur-[150px]" />
+
+        {/* Animated Grain/Noise Texture Overlay */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+      </div>
+
+      <div className="container relative z-10 mx-auto grid grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2 lg:px-12">
         {/* Left Side */}
         <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="z-20"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h1 className="mb-6 text-6xl font-bold tracking-tight text-primary dark:text-white md:text-8xl leading-[1.1]">
-            Redefining Authority in <span className="text-accent">Global Business.</span>
+          <h1 className="mb-8 text-6xl font-bold tracking-tight text-white md:text-[5.5rem] leading-[0.95]">
+            Redefining <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-accent/50">Authority</span> in <br />
+            <span className="text-accent">Global Business.</span>
           </h1>
-          <p className="mb-10 max-w-lg text-xl text-gray-600 dark:text-gray-400 leading-relaxed">
+
+          <p className="mb-12 max-w-lg text-xl text-gray-400 leading-relaxed font-light">
             LEOV combines fintech-grade innovation with world-class corporate strategy to scale your vision across borders. Fast, secure, and relentlessly professional.
           </p>
-          <div className="flex flex-wrap gap-4">
-            <Button size="lg" className="h-14 px-10 text-lg">Get Started</Button>
-            <Button variant="secondary" size="lg" className="h-14 px-10 text-lg">View Services</Button>
+
+          <div className="flex flex-wrap gap-6">
+            <Button size="lg" className="h-16 px-12 text-lg rounded-full bg-accent hover:bg-accent/90 shadow-[0_0_20px_rgba(0,112,243,0.3)]">
+              Get Started
+            </Button>
+            <Button variant="secondary" size="lg" className="h-16 px-12 text-lg rounded-full border-white/10 text-white hover:bg-white/5 backdrop-blur-sm">
+              View Services
+            </Button>
           </div>
         </motion.div>
 
         {/* Right Side - Animated Visual System */}
-        <div className="relative hidden h-[650px] lg:block">
+        <div className="relative hidden h-[700px] lg:block">
           <AnimatePresence>
             {CARDS.map((card, index) => (
               <FloatingCard
@@ -166,18 +189,14 @@ export const Hero = () => {
               />
             ))}
           </AnimatePresence>
-
-          {/* Background Decorative Elements */}
-          <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-accent/5 blur-[120px]" />
-          <div className="absolute -bottom-20 left-20 h-96 w-96 rounded-full bg-blue-500/5 blur-[120px]" />
         </div>
 
         {/* Mobile Carousel View */}
-        <div className="relative flex w-full gap-4 overflow-x-auto pb-8 lg:hidden no-scrollbar snap-x">
+        <div className="relative flex w-full gap-4 overflow-x-auto pb-12 lg:hidden no-scrollbar snap-x">
           {CARDS.map((card) => (
             <motion.div
               key={card.id}
-              className="relative aspect-[4/3] w-72 flex-shrink-0 snap-center overflow-hidden rounded-2xl shadow-xl"
+              className="relative aspect-[4/3] w-80 flex-shrink-0 snap-center overflow-hidden rounded-3xl shadow-2xl border border-white/10"
             >
               <Image
                 src={card.image}
@@ -185,28 +204,30 @@ export const Hero = () => {
                 fill
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-              <div className="absolute bottom-4 left-4 flex items-center gap-2">
-                <card.icon className="h-4 w-4 text-accent" />
-                <span className="text-sm font-bold text-white uppercase">{card.label}</span>
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+              <div className="absolute bottom-6 left-6 flex items-center gap-3">
+                <div className="rounded-lg bg-accent/30 p-2 backdrop-blur-xl">
+                  <card.icon className="h-5 w-5 text-accent" />
+                </div>
+                <span className="text-sm font-bold text-white uppercase tracking-widest">{card.label}</span>
               </div>
             </motion.div>
           ))}
         </div>
       </div>
 
-      {/* Scroll Indicator */}
+      {/* Animated Scroll Indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 2.5 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 hidden md:block"
+        transition={{ delay: 3 }}
+        className="absolute bottom-12 left-1/2 -translate-x-1/2 hidden md:block"
       >
-        <div className="flex h-12 w-7 justify-center rounded-full border-2 border-gray-300 p-1 dark:border-gray-800">
+        <div className="flex h-14 w-8 justify-center rounded-full border-2 border-white/10 p-1.5">
           <motion.div
-            animate={{ y: [0, 16, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="h-2 w-1 rounded-full bg-accent"
+            animate={{ y: [0, 20, 0] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+            className="h-2.5 w-1.5 rounded-full bg-accent"
           />
         </div>
       </motion.div>

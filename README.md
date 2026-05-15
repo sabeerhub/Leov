@@ -56,7 +56,7 @@ A premium animated visual system that brings the brand to life.
 
 1. **Clone the repo**
    ```bash
-   git clone [https://github.com/sabeerhub/Leov]
+   git clone https://github.com/leov/corporate-platform.git
    ```
 
 2. **Install dependencies**
